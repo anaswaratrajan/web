@@ -10,18 +10,10 @@ const limit = pLimit(10)
 const config = {}
 
 async function setSkeletonDirectory(skeletonType) {
-  let directoryName
-  switch (skeletonType) {
-    case 'large':
-      directoryName = 'webUISkeleton'
-      break
-    case 'small':
-      directoryName = 'apiSkeleton'
-      break
-    default:
-      directoryName = 'webUISkeleton'
-      break
-  }
+  const directoryName = getActualSkeletonDir(skeletonType)
+
+  if (directoryName === '') return
+
   const data = JSON.stringify({ directory: directoryName })
   const apiUrl = 'apps/testing/api/v1/testingskeletondirectory'
   const resp = await httpHelper.postOCS(apiUrl, 'admin', data, {
@@ -101,4 +93,23 @@ export async function rollbackConfigs(server) {
     rollbackSystemConfigs(initialSysConfig, systemConfig),
     rollbackAppConfigs(initialAppConfig, appConfig)
   ])
+}
+
+export function getActualSkeletonDir(skeletonType) {
+  if (skeletonType === '') return
+
+  let directoryName
+
+  switch (skeletonType) {
+    case 'large':
+      directoryName = 'webUISkeleton'
+      break
+    case 'small':
+      directoryName = 'apiSkeleton'
+      break
+    default:
+      directoryName = 'webUISkeleton'
+      break
+  }
+  return directoryName
 }

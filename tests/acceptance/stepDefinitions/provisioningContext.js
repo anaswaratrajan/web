@@ -10,7 +10,7 @@ const { join } = require('../helpers/path')
 
 const ldap = require('../helpers/ldapHelper')
 const sharingHelper = require('../helpers/sharingHelper')
-const { setConfigs } = require('../helpers/config')
+const { setConfigs, getActualSkeletonDir } = require('../helpers/config')
 
 function createDefaultUser(userId, skeletonType) {
   const password = userSettings.getPasswordForUser(userId)
@@ -29,7 +29,9 @@ async function createUser(
   email = false,
   skeletonType = 'large'
 ) {
-  await setConfigs(skeletonType)
+  if (!client.globals.ocis) {
+    await setConfigs(skeletonType)
+  }
   const body = new URLSearchParams()
   if (client.globals.ocis) {
     if (!email) {
@@ -52,7 +54,7 @@ async function createUser(
     .then(res => httpHelper.checkOCSStatus(res, 'Failed while creating user'))
     .then(() => {
       if (client.globals.ocis) {
-        const skelDir = client.globals.ocis_skeleton_dir
+        const skelDir = `${client.globals.testing_data_dir}${getActualSkeletonDir(skeletonType)}`
         if (skelDir) {
           const dataDir = join(client.globals.ocis_data_dir, userId)
           if (!fs.existsSync(dataDir)) {
